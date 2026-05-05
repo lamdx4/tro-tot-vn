@@ -42,7 +42,6 @@ services:
   sqlserver.configurator:
     image: mcr.microsoft.com/mssql-tools
     container_name: sqlserver.configurator
-    profiles: ["init"]
     volumes:
       - ./db:/scripts
       - ./backup:/backup
