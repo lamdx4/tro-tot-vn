@@ -14,8 +14,6 @@ services:
       - db-trototvn
       - redis-trototvn
       - coturn-trototvn
-    environment:
-      - REDIS_PASSWORD=tro-tot-secret-2024
     restart: always
 
   db-trototvn:
@@ -44,6 +42,7 @@ services:
   sqlserver.configurator:
     image: mcr.microsoft.com/mssql-tools
     container_name: sqlserver.configurator
+    profiles: ["init"]
     volumes:
       - ./db:/scripts
       - ./backup:/backup
@@ -51,7 +50,23 @@ services:
       db-trototvn:
         condition: service_healthy
     entrypoint: >
-      bash -c " echo 'Waiting for SQL Server to be fully ready...'; sleep 15; echo 'Running initialization scripts...'; chmod +x /scripts/run-scripts.sh; /scripts/run-scripts.sh \"${Sa_Password:-00hihiHIHI-}\"; "
+      bash -c "
+        if [ -f /scripts/.initialized ]; then
+          echo 'Database already initialized. Skipping...';
+          exit 0;
+        fi;
+        echo 'Waiting for SQL Server to be fully ready...';
+        sleep 15;
+        echo 'Running initialization scripts...';
+        chmod +x /scripts/run-scripts.sh;
+        if /scripts/run-scripts.sh \"${Sa_Password:-00hihiHIHI-}\"; then
+          touch /scripts/.initialized;
+          echo 'Initialization complete.';
+        else
+          echo 'Initialization failed.';
+          exit 1;
+        fi;
+      "
 
   debezium-trototvn:
     image: debezium/server:2.7.3.Final
