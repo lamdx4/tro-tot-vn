@@ -10,8 +10,6 @@ services:
     hostname: backend-trototvn
     ports:
       - "3333:3333"
-    volumes:
-      - ../../tro-tot-vn-be/trot-tot-firebase-adminsdk-fbsvc-d17b079dfa.json:/app/trot-tot-firebase-adminsdk-fbsvc-d17b079dfa.json:ro
     depends_on:
       - db-trototvn
       - redis-trototvn
